@@ -25,6 +25,13 @@ typedef struct
 
 
 //HELPING FUNCS
+/**
+ * @brief Returns the maximum of two integers.
+ *
+ * @param a The first integer.
+ * @param b The second integer.
+ * @return The maximum of a and b.
+ */
 int max(int a, int b)
 {
     #ifdef MAX
@@ -35,6 +42,13 @@ int max(int a, int b)
     return b;
 }
 
+/**
+ * @brief Returns the minimum of two integers.
+ *
+ * @param a The first integer.
+ * @param b The second integer.
+ * @return The minimum of a and b.
+ */
 int min(int a, int b)
 {
     #ifdef MIN
@@ -47,6 +61,16 @@ int min(int a, int b)
 
 
 //ARRAY
+/**
+ * @brief Resizes the given array to the given capacity.
+ *
+ * @param array The array to resize.
+ * @param newCapacity The new capacity of the array.
+ * @return True if the resizing was successful, false otherwise.
+ *
+ * If the new capacity is smaller than the current length of the array,
+ * the length is set to the new capacity.
+ */
 bool resizeIntArray(IntArray* array, int newCapacity)
 {
     #ifdef RESIZE
@@ -62,6 +86,16 @@ bool resizeIntArray(IntArray* array, int newCapacity)
     return true;
 }
 
+/**
+ * @brief Appends a value to the end of the IntArray.
+ *
+ * @param array A pointer to the IntArray to which the value should be appended.
+ * @param value The integer value to append to the array.
+ * @return True if the value is successfully appended, false if memory allocation fails.
+ *
+ * If the array's length reaches its capacity, the function reallocates memory
+ * to expand the capacity before appending the new value.
+ */
 bool appendIntArray(IntArray* array, int value)
 {
     #ifdef ARRAY_APPEND
@@ -82,6 +116,11 @@ bool appendIntArray(IntArray* array, int value)
     return true;
 }
 
+/**
+ * @brief Returns an empty IntArray.
+ *
+ * @return An empty IntArray with capacity and length set to 0 and a NULL data pointer.
+ */
 IntArray makeIntArray()
 {
     IntArray i;
@@ -91,6 +130,14 @@ IntArray makeIntArray()
     return i;
 }
 
+/**
+ * @brief Frees the memory allocated for the IntArray and resets its attributes.
+ *
+ * @param array A pointer to the IntArray to be destroyed.
+ *
+ * This function deallocates the memory used by the IntArray's data, sets the
+ * data pointer to NULL, and resets the array's capacity and length to zero.
+ */
 void destroyIntArray(IntArray* array)
 {
     array->capacity = 0;
@@ -101,6 +148,14 @@ void destroyIntArray(IntArray* array)
 
 
 //NODE
+/**
+ * @brief Returns a newly allocated Node with default values.
+ *
+ * @return A pointer to a newly allocated Node.
+ *
+ * The returned node has its left and right child pointers set to NULL,
+ * and its min and max values set to INT_MAX and INT_MIN, respectively.
+ */
 Node* makeNode()
 {
     Node* n = (Node*)malloc(sizeof(*n));
@@ -111,6 +166,15 @@ Node* makeNode()
     return n;
 }
 
+/**
+ * @brief Recursively destroys a binary tree node and its children.
+ *
+ * @param node A pointer to the Node to be destroyed.
+ *
+ * This function recursively frees the memory allocated for a Node and
+ * all of its children in a binary tree. It performs a post-order traversal
+ * to ensure that child nodes are destroyed before their parent node.
+ */
 void destroyNodeRec(Node* node)
 {
     if (node == NULL)
@@ -122,6 +186,19 @@ void destroyNodeRec(Node* node)
 
 
 //SEGTREE
+/**
+ * @brief Determines if one interval completely overlaps another.
+ *
+ * @param Qfrom The starting index of the query interval.
+ * @param Qto The ending index of the query interval.
+ * @param from The starting index of the interval to compare.
+ * @param to The ending index of the interval to compare.
+ * @return True if the query interval completely overlaps the given interval, false otherwise.
+ *
+ * This function checks if the query interval [Qfrom, Qto] completely covers
+ * the interval [from, to]. It returns true if Qfrom is less than or equal to
+ * from and Qto is greater than or equal to to.
+ */
 bool overlapsCompletly(int Qfrom, int Qto, int from, int to)
 {
     if (Qfrom <= from && Qto >= to)
@@ -137,6 +214,19 @@ bool overlapsCompletly(int Qfrom, int Qto, int from, int to)
     return false;
 }
 
+/**
+ * @brief Determines if one interval partially overlaps another.
+ *
+ * @param Qfrom The starting index of the query interval.
+ * @param Qto The ending index of the query interval.
+ * @param from The starting index of the interval to compare.
+ * @param to The ending index of the interval to compare.
+ * @return True if the query interval overlaps the given interval in any way, false otherwise.
+ *
+ * This function checks if the query interval [Qfrom, Qto] overlaps the interval
+ * [from, to] in any way. It returns true if Qfrom is less than or equal to to and
+ * Qto is greater than or equal to from.
+ */
 bool overlapsPartly(int Qfrom, int Qto, int from, int to)
 {
     if (Qfrom <= to && Qto >= from)
@@ -152,6 +242,20 @@ bool overlapsPartly(int Qfrom, int Qto, int from, int to)
     return false;
 }
 
+/**
+ * @brief Constructs a segment tree node for the given array interval.
+ *
+ * @param tree A pointer to the segtree being constructed.
+ * @param array A pointer to the IntArray from which the segment tree is built.
+ * @param from The starting index of the array interval.
+ * @param to The ending index of the array interval.
+ * @return A pointer to the root node of the constructed segment tree for the specified interval.
+ *
+ * This function recursively divides the array interval into two halves and
+ * constructs the segment tree node for each half. It sets the min and max
+ * values of the node based on its children's values. If the interval
+ * consists of a single element, it creates a leaf node with that element's value.
+ */
 Node* buildSegtree(Segtree* tree, IntArray* array, int from, int to)
 {
     if (from == to)
@@ -171,6 +275,21 @@ Node* buildSegtree(Segtree* tree, IntArray* array, int from, int to)
     return node;
 }
 
+/**
+ * @brief Recursively queries the maximum value within a specified interval in a segment tree.
+ *
+ * @param node A pointer to the current Node being queried.
+ * @param Qfrom The starting index of the query interval.
+ * @param Qto The ending index of the query interval.
+ * @param from The starting index of the current node's interval.
+ * @param to The ending index of the current node's interval.
+ * @return The maximum value within the specified query interval.
+ *
+ * This function performs a recursive search to find the maximum value
+ * within the query interval [Qfrom, Qto] in the segment tree. It considers
+ * three cases: complete overlap, partial overlap, and no overlap, and accordingly
+ * combines results from the left and right subtrees.
+ */
 int queryMaxRec(Node* node, int Qfrom, int Qto, int from, int to)
 {
     if (overlapsCompletly(Qfrom, Qto, from, to))
@@ -195,6 +314,21 @@ int queryMaxRec(Node* node, int Qfrom, int Qto, int from, int to)
     return max(left, right);
 }
 
+/**
+ * @brief Recursively queries the minimum value within a specified interval in a segment tree.
+ *
+ * @param node A pointer to the current Node being queried.
+ * @param Qfrom The starting index of the query interval.
+ * @param Qto The ending index of the query interval.
+ * @param from The starting index of the current node's interval.
+ * @param to The ending index of the current node's interval.
+ * @return The minimum value within the specified query interval.
+ *
+ * This function performs a recursive search to find the minimum value
+ * within the query interval [Qfrom, Qto] in the segment tree. It considers
+ * three cases: complete overlap, partial overlap, and no overlap, and accordingly
+ * combines results from the left and right subtrees.
+ */
 int queryMinRec(Node* node, int Qfrom, int Qto, int from, int to)
 {
     if (overlapsCompletly(Qfrom, Qto, from, to))
@@ -219,6 +353,18 @@ int queryMinRec(Node* node, int Qfrom, int Qto, int from, int to)
     return min(left, right);
 }
 
+/**
+ * @brief Queries the maximum value within a specified interval in a segment tree.
+ *
+ * @param tree A pointer to the Segtree being queried.
+ * @param Qfrom The starting index of the query interval.
+ * @param Qto The ending index of the query interval.
+ * @return The maximum value within the specified query interval.
+ *
+ * This function is a wrapper for queryMaxRec and provides a more convenient
+ * interface for querying the maximum value in a segment tree. It takes
+ * care of the base case when the tree is empty.
+ */
 int queryMax(Segtree* tree, int Qfrom, int Qto)
 {
     #ifdef QUERY
@@ -229,6 +375,18 @@ int queryMax(Segtree* tree, int Qfrom, int Qto)
     return queryMaxRec(tree->root, Qfrom, Qto, 0, tree->interval);
 }
 
+/**
+ * @brief Queries the minimum value within a specified interval in a segment tree.
+ *
+ * @param tree A pointer to the Segtree being queried.
+ * @param Qfrom The starting index of the query interval.
+ * @param Qto The ending index of the query interval.
+ * @return The minimum value within the specified query interval.
+ *
+ * This function is a wrapper for queryMinRec and provides a more convenient
+ * interface for querying the minimum value in a segment tree. It takes
+ * care of the base case when the tree is empty.
+ */
 int queryMin(Segtree* tree, int Qfrom, int Qto)
 {
     #ifdef QUERY
@@ -239,6 +397,17 @@ int queryMin(Segtree* tree, int Qfrom, int Qto)
     return queryMinRec(tree->root, Qfrom, Qto, 0, tree->interval);
 }
 
+/**
+ * @brief Constructs a segment tree from the given integer array.
+ *
+ * @param array A pointer to the IntArray from which the segment tree is built.
+ * @return A Segtree structure containing the root node of the constructed 
+ * segment tree and the interval representing the range of indices in the array.
+ *
+ * This function initializes a segment tree by setting the interval to the 
+ * length of the array minus one and calls buildSegtree to construct the 
+ * tree nodes. It returns the constructed segment tree.
+ */
 Segtree makeSegtree(IntArray* array)
 {
     Segtree tree;
@@ -247,6 +416,15 @@ Segtree makeSegtree(IntArray* array)
     return tree;
 }
 
+/**
+ * @brief Destroys a segment tree by deallocating all of its nodes.
+ *
+ * @param tree A pointer to the Segtree to be destroyed.
+ *
+ * This function recursively frees the memory allocated for each node
+ * in the segment tree using destroyNodeRec. Afterwards, it resets the
+ * tree's root pointer to NULL and sets the interval to -1.
+ */
 void destroySegtree(Segtree* tree)
 {
     destroyNodeRec(tree->root);
@@ -256,6 +434,16 @@ void destroySegtree(Segtree* tree)
 
 
 //LOADING
+/**
+ * @brief Loads integers from standard input into an IntArray.
+ *
+ * @param array A pointer to the IntArray to be loaded with integers.
+ * @return True if at least one integer is successfully loaded and appended, false otherwise.
+ *
+ * This function reads integers from standard input, appending each to the given
+ * IntArray. Input is terminated by a newline or EOF. The function returns false
+ * if memory allocation fails or if a non-integer character (other than space) is encountered.
+ */
 bool loadArray(IntArray* array)
 {
     puts("Napište čísla oddělená mezerou:");
@@ -280,6 +468,22 @@ bool loadArray(IntArray* array)
 
 enum {BAD_INPUT, END_OF_INPUT, MIN_QUERY, MAX_QUERY};
 
+/**
+ * @brief Loads a query from standard input.
+ *
+ * @param from A pointer to an int to store the starting index of the query interval.
+ * @param to A pointer to an int to store the ending index of the query interval.
+ * @param maxInterval The ending index of the array interval.
+ * @return BAD_INPUT if the input is invalid, END_OF_INPUT if there is no more input, MIN_QUERY or MAX_QUERY depending on the type of query.
+ *
+ * This function reads a query from standard input, which consists of a single
+ * character (either 'm' or 'M') followed by two integers representing the
+ * starting and ending indices of the query interval. It appends the loaded
+ * query to the given IntArray. Input is terminated by a newline or EOF.
+ * The function returns BAD_INPUT if memory allocation fails or if a non-integer
+ * character (other than space) is encountered, END_OF_INPUT if there is no more
+ * input, MIN_QUERY or MAX_QUERY depending on the type of query.
+ */
 int loadQuery(int* from, int* to, int maxInterval)
 {
     char q = '\0';
@@ -313,6 +517,14 @@ int loadQuery(int* from, int* to, int maxInterval)
 }
 
 //PRINTING
+/**
+ * @brief Prints the contents of an IntArray.
+ *
+ * @param array A pointer to the IntArray to be printed.
+ *
+ * This function prints each element of the IntArray, with each element 
+ * separated by a '|' character and enclosed within '|' characters.
+ */
 void printIntArray(IntArray* array)
 {
     for (int i = 0; i < array->length; i++)
