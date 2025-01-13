@@ -45,8 +45,13 @@ int min(int a, int b)
     return b;
 }
 
+
+//ARRAY
 bool resizeIntArray(IntArray* array, int newCapacity)
 {
+    #ifdef RESIZE
+    printf("[RESIZE] Resizing from %d to %d\n", array->capacity, newCapacity);
+    #endif
     array->capacity = newCapacity;
     int* tmp = (int*)realloc(array->data, array->capacity * sizeof(*(array->data)));
     if (!tmp)
@@ -59,8 +64,14 @@ bool resizeIntArray(IntArray* array, int newCapacity)
 
 bool appendIntArray(IntArray* array, int value)
 {
+    #ifdef ARRAY_APPEND
+    printf("[ARRAY_APPEND] Appending %d to array\n", value);
+    #endif
     if (array->length >= array->capacity)
     {
+        #ifdef ARRAY_APPEND
+        puts("[ARRAY_APPEND] Needs to realloc");
+        #endif
         array->capacity = (array->capacity + 1) * 2;
         int* tmp = (int*)realloc(array->data, array->capacity*sizeof(*(array->data)));
         if (!tmp)
@@ -71,14 +82,6 @@ bool appendIntArray(IntArray* array, int value)
     return true;
 }
 
-void nullArray(IntArray* array, int start)
-{
-    for (int i = start; i < array->capacity; i++)
-        array->data[i] = 0;
-}
-
-
-//CONSTRUCTORS
 IntArray makeIntArray()
 {
     IntArray i;
@@ -88,6 +91,16 @@ IntArray makeIntArray()
     return i;
 }
 
+void destroyIntArray(IntArray* array)
+{
+    array->capacity = 0;
+    array->length = 0;
+    free(array->data);
+    array->data = NULL;
+}
+
+
+//NODE
 Node* makeNode()
 {
     Node* n = (Node*)malloc(sizeof(*n));
@@ -98,8 +111,17 @@ Node* makeNode()
     return n;
 }
 
+void destroyNodeRec(Node* node)
+{
+    if (node == NULL)
+        return;
+    destroyNodeRec(node->right);
+    destroyNodeRec(node->left);
+    free(node);
+}
 
-//SEGTREE FUNCS
+
+//SEGTREE
 bool overlapsCompletly(int Qfrom, int Qto, int from, int to)
 {
     if (Qfrom <= from && Qto >= to)
@@ -129,7 +151,6 @@ bool overlapsPartly(int Qfrom, int Qto, int from, int to)
     #endif
     return false;
 }
-
 
 Node* buildSegtree(Segtree* tree, IntArray* array, int from, int to)
 {
@@ -174,11 +195,48 @@ int queryMaxRec(Node* node, int Qfrom, int Qto, int from, int to)
     return max(left, right);
 }
 
+int queryMinRec(Node* node, int Qfrom, int Qto, int from, int to)
+{
+    if (overlapsCompletly(Qfrom, Qto, from, to))
+        return node->min;
+    
+    int mid = from + (to - from) / 2;
+
+    //left subtree
+    int left = INT_MAX;
+    if (overlapsCompletly(Qfrom, Qto, from, mid))
+        left = node->left->min;
+    else if (overlapsPartly(Qfrom, Qto, from, mid))
+        left = queryMinRec(node->left, Qfrom, Qto, from, mid);
+    
+    //right subtree
+    int right = INT_MAX;
+    if (overlapsCompletly(Qfrom, Qto, mid + 1, to))
+        right = node->right->min;
+    else if (overlapsPartly(Qfrom, Qto, mid + 1, to))
+        right = queryMinRec(node->right, Qfrom, Qto, mid + 1, to);
+    
+    return min(left, right);
+}
+
 int queryMax(Segtree* tree, int Qfrom, int Qto)
 {
+    #ifdef QUERY
+    printf("[QUERY] Max query %d-%d\n", Qfrom, Qto);
+    #endif
     if (tree->root == NULL)
         return INT_MIN;
     return queryMaxRec(tree->root, Qfrom, Qto, 0, tree->interval);
+}
+
+int queryMin(Segtree* tree, int Qfrom, int Qto)
+{
+    #ifdef QUERY
+    printf("[QUERY] Min query %d-%d\n", Qfrom, Qto);
+    #endif
+    if (tree->root == NULL)
+        return INT_MAX;
+    return queryMinRec(tree->root, Qfrom, Qto, 0, tree->interval);
 }
 
 Segtree makeSegtree(IntArray* array)
@@ -187,25 +245,6 @@ Segtree makeSegtree(IntArray* array)
     tree.interval = array->length - 1;
     tree.root = buildSegtree(&tree, array, 0, tree.interval);
     return tree;
-}
-
-
-//DESTRUCTORS
-void destroyIntArray(IntArray* array)
-{
-    array->capacity = 0;
-    array->length = 0;
-    free(array->data);
-    array->data = NULL;
-}
-
-void destroyNodeRec(Node* node)
-{
-    if (node == NULL)
-        return;
-    destroyNodeRec(node->right);
-    destroyNodeRec(node->left);
-    free(node);
 }
 
 void destroySegtree(Segtree* tree)
@@ -239,13 +278,14 @@ bool loadArray(IntArray* array)
     return false;
 }
 
-//0 = bad input
-//1 = good input
-//2 = no input
-int loadQuery(int* from, int* to)
+enum {BAD_INPUT, END_OF_INPUT, MIN_QUERY, MAX_QUERY};
+
+int loadQuery(int* from, int* to, int maxInterval)
 {
-    if (scanf(" %d %d", from, to) != 2)
+    char q = '\0';
+    if (scanf(" %c %d %d", &q, from, to) != 3)
     {
+        //check for end of input
         char c = EOF;
         scanf(" %c", &c);
         if (c == EOF || c == '\n')
@@ -253,14 +293,23 @@ int loadQuery(int* from, int* to)
             #ifdef LOAD_QUERY
             puts("[LOAD_QUERY] No more input, exiting...");
             #endif
-            return 2;
+            return END_OF_INPUT;
         }
         #ifdef LOAD_QUERY
         puts("[LOAD_QUERY] Bad input, exiting...");
         #endif
-        return false;
+        return BAD_INPUT;
     }
-    return 1;
+    if (*from < 0 || *to > maxInterval || *to < *from || (q != 'm' && q != 'M'))
+    {
+        #ifdef LOAD_QUERY
+        puts("[LOAD_QUERY] Bad interval or query identifier, exiting...");
+        #endif
+        return BAD_INPUT;
+    }
+    if (q == 'm')
+        return MIN_QUERY;
+    return MAX_QUERY;
 }
 
 //PRINTING
@@ -290,22 +339,26 @@ int main()
 
     //queries
     int from, to;
-    puts("Napište dotaz pro maximum v intervalu jako dvě čísla oddělená mezerou from to:");
+    puts("Napište dotaz:");
     while (!feof(stdin))
     {
-        int code = loadQuery(&from, &to);
-        if (code == 2)
-            break;
-        else if (!code)
+        int code = loadQuery(&from, &to, tree.interval);
+        if (code == BAD_INPUT)
         {
             puts("Nesprávný dotaz!");
             destroySegtree(&tree);
             destroyIntArray(&array);
             return EXIT_FAILURE;
         }
-        printf("Maximum v intervalu %d-%d je: %d\n", from, to, queryMax(&tree, from, to));
+        else if (code == END_OF_INPUT)
+            break;
+        else if (code == MIN_QUERY)
+            printf("Minimum v intervalu %d-%d je: %d\n", from, to, queryMin(&tree, from, to));
+        else if (code == MAX_QUERY)
+            printf("Maximum v intervalu %d-%d je: %d\n", from, to, queryMax(&tree, from, to));
     }
     
+    //cleanup
     destroySegtree(&tree);
     destroyIntArray(&array);
     return EXIT_SUCCESS;
