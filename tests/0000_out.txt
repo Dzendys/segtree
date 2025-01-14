@@ -1,0 +1,12 @@
+Napište čísla oddělená mezerou:
+Napište dotaz:
+Minimum v intervalu 2-3 je: 7528
+Maximum v intervalu 2-3 je: 9920
+Minimum v intervalu 1-9 je: 595
+Maximum v intervalu 1-9 je: 9920
+Minimum v intervalu 3-9 je: 595
+Maximum v intervalu 3-9 je: 8952
+Minimum v intervalu 6-7 je: 3463
+Maximum v intervalu 6-7 je: 7034
+Minimum v intervalu 3-5 je: 595
+Maximum v intervalu 3-5 je: 7528
